@@ -208,3 +208,46 @@ def deserialize_complex(obj):
     elif isinstance(obj, list):
         return [deserialize_complex(v) for v in obj]
     return obj
+
+
+def f0h2vs(f, h):
+    """Calculate shear-wave velocity from fundamental frequency and thickness."""
+    return 4 * f * h
+
+
+def Q2zeta(Q):
+    """Convert quality factor Q to damping ratio zeta."""
+    return 1 / (2 * Q)
+
+
+def zeta2Q(zeta):
+    """Convert damping ratio zeta to quality factor Q."""
+    return 1 / (2 * zeta)
+
+
+def calculate_stream_difference(st1, st2):
+    """
+    Calculate the sample-by-sample difference between two streams.
+    """
+    from shakelab.signals.base import Stream
+    st_diff = Stream(sid=st1.sid)
+    for rec1, rec2 in zip(st1.record, st2.record):
+        diff_data = rec1.data - rec2.data
+        new_rec = rec1.copy()
+        new_rec.data = diff_data
+        st_diff.record.append(new_rec)
+    return st_diff
+
+
+def calc_drift(st1, st2):
+    """
+    Calculate maximum drift between two streams.
+    """
+    st_diff = calculate_stream_difference(st1, st2)
+    max_drift = 0.0
+    for rec in st_diff.record:
+        if len(rec.data) > 0:
+            current_max = _np.max(_np.abs(rec.data))
+            if current_max > max_drift:
+                max_drift = current_max
+    return max_drift

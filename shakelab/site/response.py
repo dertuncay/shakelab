@@ -354,3 +354,62 @@ def resonance_frequency(freq, spec):
             resf.append((freq[nf+1], a1))
 
     return resf
+
+
+def transfer_function_n_layer(freqs, building, half_space):
+    """
+    Generalized transfer function TF_{u-u}(f) for a building model over a half-space,
+    including damping via complex velocities.
+
+    Parameters:
+    -----------
+    freqs : array_like
+        Frequencies in Hz
+    building : building_model
+        The building model (layer)
+    half_space : HalfSpaceModel
+        The half-space model (base)
+
+    Returns:
+    --------
+    tf : np.ndarray
+        Complex transfer function TF_{u-u}(f) at each frequency
+    """
+    h = [building.thickness]
+    vs = [building.vs, half_space.vs]
+    rho = [building.rho, half_space.rho]
+    qs = [building.Q, half_space.Q]
+
+    omega = 2 * _np.pi * freqs
+    i = 1j
+    Nf = len(freqs)
+    N = len(h)  # Number of layers
+
+    # Complex shear velocities and moduli
+    vs_star = _np.array(vs) / (1 + i / (2 * _np.array(qs)))
+    mu_star = _np.array(rho) * vs_star ** 2
+    Z = _np.sqrt(mu_star * _np.array(rho))
+
+    tf = _np.zeros(Nf, dtype=complex)
+
+    for k, w in enumerate(omega):
+        A = _np.identity(2, dtype=complex)
+
+        for j in range(N):
+            rj = w * h[j] / vs_star[j]
+            Zj = Z[j]
+
+            cos_rj = _np.cos(rj)
+            sin_rj = _np.sin(rj)
+
+            Aj = _np.array([
+                [cos_rj, sin_rj / Zj],
+                [-Zj * sin_rj, cos_rj]
+            ], dtype=complex)
+
+            A = A @ Aj
+
+        tf[k] = 1.0 / A[0, 0]
+
+    return tf
+
