@@ -3,13 +3,28 @@ import matplotlib.pyplot as plt
 
 from shakelab.signals.base import Stream, Record
 from shakelab.signals.fourier import Spectrum
-from shakelab.engineering.structure.structure import F0BuildingModel, HalfSpaceModel
+from shakelab.engineering.structure import (
+    F0BuildingModel,
+    HalfSpaceModel,
+    DamageState,
+)
 from shakelab.site.response import transfer_function_n_layer
 from shakelab.libutils.utils import calculate_stream_difference, calc_drift
-from shakelab.engineering.structure.damage_state import DamageState
 
 
 def generate_signal(freq, duration, sampling_rate):
+    '''
+    This function generates a synthetic seismic signal with a given frequency, 
+    duration, and sampling rate.
+    
+    Args:
+        freq (float): Frequency of the sine wave (Hz).
+        duration (float): Duration of the signal (seconds).
+        sampling_rate (int): Sampling rate of the signal (Hz).
+    
+    Returns:
+        tuple: Tuple of time vector and signal data.
+    '''
     t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
     signal = np.sin(2 * np.pi * freq * t)
     noise = np.random.normal(0, 0.1, len(t))

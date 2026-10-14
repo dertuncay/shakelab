@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from shakelab.engineering.structure.structure import F0BuildingModel, HalfSpaceModel
+from shakelab.engineering.structure import F0BuildingModel, HalfSpaceModel
 from shakelab.site.response import transfer_function_n_layer
 
 
